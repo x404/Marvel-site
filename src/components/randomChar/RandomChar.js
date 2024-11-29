@@ -10,14 +10,12 @@ class RandomChar extends Component {
         super(props);
         this.updateChar();
     }
-
-
+    
     state = {
         char: {},
         loading: true,
         error: false,
     }
-
 
     marvelService = new MarvelService();
 
