@@ -1,6 +1,6 @@
 import './charList.scss';
-import abyss from '../../resources/img/abyss.jpg';
-import {Component} from "react";
+// import abyss from '../../resources/img/abyss.jpg';
+import {Component, createRef} from "react";
 import MarvelService from "../../services/MarvelService";
 import Spinner from "../spinner/Spinner";
 import ErrorMessage from "../errorMessage/ErrorMessage";
@@ -11,7 +11,9 @@ class CharList extends Component {
     constructor(props) {
         super(props);
 
+        this.charListRef = createRef();
     }
+
 
     state = {
         charList: [],
@@ -65,17 +67,28 @@ class CharList extends Component {
 
 
     renderItems(arr) {
-        const items = arr.map(item => {
+
+        const items = arr.map((item, index) => {
             let imgStyle = {'objectFit': 'cover'};
             if (item.thumbnail === 'http://i.annihil.us/u/prod/marvel/i/mg/b/40/image_not_available.jpg') {
                 imgStyle = {'objectFit': 'unset'};
             }
-
+            
             return (
-                <li className="char__item"
+                <li
                     key={item.id}
-                    onClick={() => this.props.onCharSelected(item.id)}
-                >
+                    onClick={() => {
+                        this.props.onCharSelected(item.id);
+                        this.focusOnItem(index);
+                    }}
+                    tabIndex={0}
+                    className='char__item'
+                    onKeyPress={(e) => {
+                        if (e.key === ' ' || e.key === "Enter") {
+                            this.props.onCharSelected(item.id);
+                            this.focusOnItem(index);
+                        }
+                    }}>
                     <img src={item.thumbnail} alt={item.name} style={imgStyle}/>
                     <div className="char__name">{item.name}</div>
                 </li>
@@ -83,7 +96,7 @@ class CharList extends Component {
         })
 
         return (
-            <ul className="char__grid">
+            <ul className="char__grid" ref={this.charListRef}>
                 {items}
             </ul>
         )
@@ -107,13 +120,21 @@ class CharList extends Component {
                 <button
                     className="button button__main button__long"
                     disabled={newItemLoading}
-                    style = {{'display': charEnded ? 'none' : 'block'}}
+                    style={{'display': charEnded ? 'none' : 'block'}}
                     onClick={() => this.onRequest(offset)}
                 >
                     <div className="inner">load more</div>
                 </button>
             </div>
         )
+    }
+
+    focusOnItem(index) {
+        for (const item of this.charListRef.current.children) {
+            item.classList.remove('char__item_selected');
+        }
+
+        this.charListRef.current.children[index].classList.add('char__item_selected');
     }
 }
 
